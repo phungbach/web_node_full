@@ -1,0 +1,11 @@
+node_modules
+.env
+.env.local
+server/.env
+server/data/admin-auth.json
+server/data/settings.json
+server/data/media.json
+client/.env
+client/dist
+.DS_Store
+npm-debug.log*

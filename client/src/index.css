@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #0f172a;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@layer components {
+  .container-shell {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .shadow-soft {
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  }
+
+  .section-title {
+    @apply text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl;
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700;
+  }
+
+  .article-content {
+    @apply text-base leading-8 text-slate-700;
+  }
+
+  .article-content h2 {
+    @apply mb-4 mt-10 text-2xl font-black leading-tight text-[#0B3B78];
+  }
+
+  .article-content h3 {
+    @apply mb-3 mt-8 text-xl font-bold text-[#0B3B78];
+  }
+
+  .article-content p {
+    @apply mb-5;
+  }
+
+  .article-content ul {
+    @apply mb-6 list-disc space-y-2 pl-6;
+  }
+
+  .article-content strong {
+    @apply font-bold text-[#0B3B78];
+  }
+
+  .article-content a {
+    @apply font-semibold text-[#E31B23] underline decoration-[#FFC400] decoration-2 underline-offset-4;
+  }
+}
