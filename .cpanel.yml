@@ -1,0 +1,8 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/nhhocmes/public_html/
+    - npm ci --prefix client
+    - npm ci --prefix server --omit=dev
+    - npm run build --prefix client
+    - /bin/cp -R client/dist/. $DEPLOYPATH
