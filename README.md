@@ -101,61 +101,7 @@ Các khu vực quản trị:
 
 #### Trang chủ
 
-![Trang chủ](./docs/screenshots/home.png)
-
-#### Blog
-
-![Blog](./docs/screenshots/blog.png)
-
-#### Luyện đề thi
-
-![Luyện đề thi](./docs/screenshots/quiz.png)
-
-#### Khóa học ô tô
-
-![Khóa học ô tô](./docs/screenshots/car-course.png)
-
-#### Khóa học xe máy
-
-![Khóa học xe máy](./docs/screenshots/motorbike-course.png)
-
-#### Đăng ký tư vấn
-
-![Đăng ký](./docs/screenshots/register.png)
-
-#### Liên hệ
-
-![Liên hệ](./docs/screenshots/contact.png)
-
-### Admin CMS
-
-#### Dashboard
-
-![Admin Dashboard](./docs/screenshots/admin-dashboard.png)
-
-#### Quản lý bài viết
-
-![Admin bài viết](./docs/screenshots/admin-posts.png)
-
-#### Bộ câu hỏi luyện đề
-
-![Admin luyện đề](./docs/screenshots/admin-quiz.png)
-
-#### SEO tổng hợp
-
-![Admin SEO](./docs/screenshots/admin-seo.png)
-
-#### Backup và Restore
-
-![Admin Backup](./docs/screenshots/admin-backups.png)
-
-#### Thư viện ảnh
-
-![Admin Media](./docs/screenshots/admin-media.png)
-
-#### Cài đặt website
-
-![Admin Settings](./docs/screenshots/admin-settings.png)
+<img src="./docs/screenshots/home.png" alt="Trang chủ Học lái xe Tuyên Quang" width="600" />
 
 ## 3. Cấu trúc dự án
 
