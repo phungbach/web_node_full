@@ -3,6 +3,7 @@ import api from '../../services/api';
 
 const number = (value) => new Intl.NumberFormat('vi-VN').format(value || 0);
 const date = (value) => new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit' }).format(new Date(value));
+const chartHeightClass = (value, max) => `chart-bar-height-${value ? Math.min(10, Math.max(1, Math.ceil((value / max) * 10))) : 0}`;
 
 function DashboardPage() {
   const [data, setData] = useState(null);
@@ -66,7 +67,7 @@ function DashboardPage() {
       <div className="grid min-w-0 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">{stats.map(([label, value]) => <div key={label} className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6"><p className="text-3xl font-black text-slate-900">{data ? number(value) : '...'}</p><p className="mt-2 break-words text-sm font-semibold text-slate-600">{label}</p></div>)}</div>
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Thống kê thủ công</p><h2 className="mt-2 text-xl font-bold text-slate-900">Khách truy cập và lượt xem · 30 ngày</h2></div><p className="text-sm text-slate-500">Mỗi lần mở hoặc chuyển trang được tính 1 lượt</p></div>
-        <div className="mt-6 flex h-64 items-end gap-1 overflow-x-auto border-b border-slate-200 pb-0">{chart.map((item) => <div key={item.date} className="group flex h-full min-w-[18px] flex-1 flex-col justify-end" title={`${date(item.date)}: ${item.visitors} khách, ${item.postViews} lượt xem`}><div className="w-full rounded-t bg-blue-500" style={{ height: `${Math.max(2, (item.visitors / max) * 100)}%` }} /><div className="w-full bg-yellow-400" style={{ height: `${Math.max(2, (item.postViews / max) * 100)}%` }} /></div>)}</div>
+        <div className="mt-6 flex h-64 items-end gap-1 overflow-x-auto border-b border-slate-200 pb-0">{chart.map((item) => <div key={item.date} className="group flex h-full min-w-[18px] flex-1 flex-col justify-end" title={`${date(item.date)}: ${item.visitors} khách, ${item.postViews} lượt xem`}><div className={`w-full rounded-t bg-blue-500 ${chartHeightClass(item.visitors, max)}`} /><div className={`w-full bg-yellow-400 ${chartHeightClass(item.postViews, max)}`} /></div>)}</div>
         <div className="mt-4 flex gap-5 text-sm text-slate-600"><span><i className="mr-2 inline-block h-3 w-3 rounded bg-blue-500" />Khách truy cập</span><span><i className="mr-2 inline-block h-3 w-3 rounded bg-yellow-400" />Lượt xem bài viết</span></div>
       </div>
     </div>

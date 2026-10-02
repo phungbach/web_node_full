@@ -15,6 +15,7 @@ const filterOptions = [
 ];
 
 const getQuestionState = (question, answers) => (answers[question._id] === undefined ? 'unanswered' : 'answered');
+const progressClass = (value) => `quiz-progress-${Math.min(10, Math.max(0, Math.round(value / 10)))}`;
 
 function Quiz() {
   const [vehicleType, setVehicleType] = useState('car');
@@ -228,7 +229,7 @@ function Quiz() {
                       </label>
                     ))}
                   </div>
-                  <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-[#E31B23] transition-all" style={{ width: `${progress}%` }} /></div>
+                  <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-slate-200"><div className={`h-full rounded-full bg-[#E31B23] transition-all ${progressClass(progress)}`} /></div>
                 </div>
               </section>
             </div>

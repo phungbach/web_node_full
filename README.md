@@ -459,3 +459,11 @@ Hệ thống hỗ trợ:
 - Đổi mật khẩu MySQL nếu đã chia sẻ ở nơi không an toàn.
 - Backup có dữ liệu nhạy cảm, cần lưu trữ riêng tư.
 - Chỉ Admin đã đăng nhập mới được quản lý bài viết, quiz, backup và restore.
+- HTTPS gửi header HSTS `max-age=31536000; includeSubDomains`.
+- Gửi `X-Content-Type-Options: nosniff` để trình duyệt không tự đoán MIME type.
+- Gửi `X-Frame-Options: SAMEORIGIN`; CSP đồng thời dùng `frame-ancestors 'none'` để chặn nhúng trang trong iframe.
+- Gửi `Referrer-Policy: strict-origin-when-cross-origin` để không làm lộ URL đầy đủ khi chuyển sang domain khác; không dùng `unsafe-url`.
+- Gửi `Permissions-Policy: camera=(), microphone=(), geolocation=()` vì website không sử dụng camera, microphone hoặc định vị.
+- Apache/LiteSpeed chuyển hướng 301 toàn bộ request HTTP sang HTTPS trước khi xử lý API hoặc React Router.
+- CSP giới hạn script/style/frame/resource về nguồn tin cậy, không dùng `unsafe-inline` hoặc `unsafe-eval`.
+- Chưa bật token `preload`; chỉ đăng ký `hoclaixetq.com` vào HSTS preload list sau khi xác nhận mọi subdomain đều hỗ trợ HTTPS và muốn cam kết chính sách không thể hoàn tác dễ dàng.

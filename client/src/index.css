@@ -51,6 +51,32 @@ select {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
 
+  @layer utilities {
+    .chart-bar-height-0 { height: 2%; }
+    .chart-bar-height-1 { height: 10%; }
+    .chart-bar-height-2 { height: 20%; }
+    .chart-bar-height-3 { height: 30%; }
+    .chart-bar-height-4 { height: 40%; }
+    .chart-bar-height-5 { height: 50%; }
+    .chart-bar-height-6 { height: 60%; }
+    .chart-bar-height-7 { height: 70%; }
+    .chart-bar-height-8 { height: 80%; }
+    .chart-bar-height-9 { height: 90%; }
+    .chart-bar-height-10 { height: 100%; }
+
+    .quiz-progress-0 { width: 0%; }
+    .quiz-progress-1 { width: 10%; }
+    .quiz-progress-2 { width: 20%; }
+    .quiz-progress-3 { width: 30%; }
+    .quiz-progress-4 { width: 40%; }
+    .quiz-progress-5 { width: 50%; }
+    .quiz-progress-6 { width: 60%; }
+    .quiz-progress-7 { width: 70%; }
+    .quiz-progress-8 { width: 80%; }
+    .quiz-progress-9 { width: 90%; }
+    .quiz-progress-10 { width: 100%; }
+  }
+
   .shadow-soft {
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
   }
