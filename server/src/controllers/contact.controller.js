@@ -1,18 +1,12 @@
-const seedContacts = [];
+import { createContactRecord, getContactRecords } from '../services/contact.service.js';
 
 export const createContact = async (req, res, next) => {
   try {
-    const contact = {
-      _id: String(Date.now()),
+    const contact = await createContactRecord({
       name: req.body.name,
       phone: req.body.phone,
       message: req.body.message || '',
-      status: 'new',
-      createdAt: new Date(),
-    };
-
-    seedContacts.unshift(contact);
-
+    });
     res.status(201).json({ success: true, message: 'Contact created', data: contact });
   } catch (error) {
     next(error);
@@ -21,7 +15,7 @@ export const createContact = async (req, res, next) => {
 
 export const listContacts = async (req, res, next) => {
   try {
-    res.json({ success: true, message: 'Success', data: seedContacts });
+    res.json({ success: true, message: 'Success', data: await getContactRecords() });
   } catch (error) {
     next(error);
   }

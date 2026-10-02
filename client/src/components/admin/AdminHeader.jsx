@@ -17,7 +17,7 @@ function makeBreadcrumbs(pathname) {
   return breadcrumbs;
 }
 
-function AdminHeader() {
+function AdminHeader({ isMobileMenuOpen, onMenuToggle }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
@@ -38,9 +38,19 @@ function AdminHeader() {
   })();
 
   return (
-    <header className="border-b border-slate-200 bg-white px-6 py-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+    <header className="min-w-0 border-b border-slate-200 bg-white px-3 py-3 sm:px-6 sm:py-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-xl text-slate-700 hover:border-blue-200 hover:text-blue-700 lg:hidden"
+            aria-label={isMobileMenuOpen ? 'Đóng menu quản trị' : 'Mở menu quản trị'}
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? '×' : '☰'}
+          </button>
+          <nav className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-slate-500">
           {breadcrumbs.map((crumb, index) => (
             <div key={crumb.to} className="flex items-center gap-2">
               {index > 0 ? <span>/</span> : null}
@@ -53,9 +63,10 @@ function AdminHeader() {
               )}
             </div>
           ))}
-        </nav>
+          </nav>
+        </div>
 
-        <div className="relative flex items-center gap-3">
+        <div className="relative flex items-center gap-2 self-end sm:gap-3 md:self-auto">
           <Link to="/" className="rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-200 hover:text-blue-700">
             Xem website
           </Link>

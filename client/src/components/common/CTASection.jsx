@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-function CTASection({ title, description, primary = '/dang-ky', secondary = 'tel:0900000000' }) {
+function CTASection({ title, description, primary = '/dang-ky', secondary = 'tel:0987499141' }) {
   return (
     <section className="py-16 sm:py-20">
       <div className="container-shell">

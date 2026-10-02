@@ -23,7 +23,7 @@ function Header() {
   const location = useLocation();
   const [openMenu, setOpenMenu] = useState(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const logoSource = settings.logo || (settings.isLoaded ? logo : '');
+  const logoSource = settings.logo || logo;
   const titleParts = splitSiteTitle(settings.siteName);
 
   useEffect(() => {
@@ -33,23 +33,42 @@ function Header() {
 
   const isCoursesActive = ['/hoc-lai-xe-o-to', '/hoc-lai-xe-may', '/dang-ky'].includes(location.pathname);
   const isBlogActive = ['/kinh-nghiem', '/cau-hoi', '/lien-he'].includes(location.pathname);
+  const isQuizActive = location.pathname === '/quiz';
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
-      <div className="container-shell flex items-center gap-4 py-3 sm:gap-6 sm:py-4">
-        <Link to="/" className="-ml-2 flex min-w-0 shrink-0 items-center gap-3 sm:-ml-1" aria-label={`Trang chủ ${settings.siteName}`}>
-          <span className="flex h-14 w-36 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-            {logoSource ? <img src={logoSource} alt={settings.siteName} className="h-full w-full object-cover object-center" /> : null}
+    <header className="sticky top-0 z-50 overflow-visible border-b border-slate-200 bg-white/90 backdrop-blur-sm">
+      <div className="container-shell flex min-w-0 items-center gap-2 py-3 sm:gap-6 sm:py-4">
+        <Link to="/" className="-ml-2 flex min-w-0 flex-1 items-center gap-2 sm:-ml-1 sm:gap-3" aria-label={`Trang chủ ${settings.siteName}`}>
+          <span className="flex h-12 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg sm:h-14 sm:w-36">
+            <img
+              src={logoSource}
+              alt={settings.siteName}
+              onError={(event) => {
+                if (event.currentTarget.dataset.fallbackApplied) return;
+                event.currentTarget.dataset.fallbackApplied = 'true';
+                event.currentTarget.src = logo;
+              }}
+              className="h-full w-full object-contain object-center"
+            />
           </span>
-          <span className="max-w-[11rem] whitespace-normal break-words text-base font-black leading-[1.05] tracking-tight text-[#0B3B78] sm:max-w-[15rem] sm:text-lg">
-            {titleParts.main ? <span>{titleParts.main} </span> : null}
-            {titleParts.highlight ? <span className="text-[#E31B23]">{titleParts.highlight}</span> : null}
+          <span className="min-w-0 max-w-[20rem] whitespace-normal break-words text-sm font-black leading-[1.05] tracking-tight text-[#0B3B78] sm:max-w-[20rem] sm:text-lg">
+            <span className="block">
+              {titleParts.main ? <span>{titleParts.main} </span> : null}
+              {titleParts.highlight ? <span className="text-[#E31B23]">{titleParts.highlight}</span> : null}
+            </span>
+            <span className="mt-1 flex items-center gap-1 animate-pulse whitespace-nowrap text-xs font-black tracking-normal text-[#E31B23] sm:text-base">
+              <span>Hotline: 0987.499.141</span>
+            </span>
           </span>
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-3 lg:flex xl:gap-4">
+        <nav className="ml-auto hidden min-w-0 items-center gap-2 lg:flex xl:gap-4">
           <NavLink to="/" end className={({ isActive }) => `whitespace-nowrap text-[13px] font-medium transition xl:text-sm ${isActive ? 'text-blue-700' : 'text-slate-600 hover:text-slate-900'}`}>
             Trang chủ
+          </NavLink>
+
+          <NavLink to="/quiz" className={`whitespace-nowrap text-[13px] font-semibold transition xl:text-sm ${isQuizActive ? 'text-[#E31B23]' : 'text-slate-600 hover:text-[#E31B23]'}`}>
+            Luyện đề thi
           </NavLink>
 
           <div className="group relative">
@@ -77,7 +96,7 @@ function Header() {
           </div>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <a
             href={`tel:${settings.phone}`}
             className="hidden rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 sm:inline-flex"
@@ -104,6 +123,7 @@ function Header() {
             <Link to="/hoc-lai-xe-o-to" className="rounded-xl px-4 py-3 text-slate-700 hover:bg-blue-50">Học lái ô tô</Link>
             <Link to="/hoc-lai-xe-may" className="rounded-xl px-4 py-3 text-slate-700 hover:bg-blue-50">Học lái xe máy</Link>
             <Link to="/dang-ky" className="rounded-xl px-4 py-3 text-[#E31B23] hover:bg-red-50">Đăng ký tư vấn</Link>
+            <Link to="/quiz" className="rounded-xl px-4 py-3 text-[#E31B23] hover:bg-red-50">Luyện đề thi</Link>
             <p className="px-4 pb-1 pt-3 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Blog</p>
             <Link to="/kinh-nghiem" className="rounded-xl px-4 py-3 text-slate-700 hover:bg-blue-50">Kinh nghiệm</Link>
             <Link to="/cau-hoi" className="rounded-xl px-4 py-3 text-slate-700 hover:bg-blue-50">FAQ</Link>

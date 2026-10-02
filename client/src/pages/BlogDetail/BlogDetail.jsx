@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import CTASection from '../../components/common/CTASection';
 import { blogPosts } from '../../constants/site';
 import api from '../../services/api';
+import { formatPostDate } from '../../utils/date';
 
 const articleContent = `
 <p>Học lái xe là quá trình cần sự kiên nhẫn, luyện tập định kỳ và hiểu rõ quy trình học tập. Tại Tuyên Quang, nhiều học viên mới bắt đầu thường băn khoăn về thời gian học, hồ sơ cần chuẩn bị và quy tắc thi. </p>
@@ -11,19 +12,62 @@ const articleContent = `
 <p>Đối với người mới, hãy chọn chương trình học có hướng dẫn từng bước, phù hợp với thời gian rảnh và khả năng của bản thân. Khi đã hiểu rõ quy trình, bạn sẽ thấy việc học lái xe trở nên dễ dàng hơn rất nhiều.</p>
 `;
 
+const getCategoryName = (category) => {
+  if (category && typeof category === 'object') return category.name || 'Kinh nghiệm';
+  if (typeof category === 'string' && !/^\d+$/.test(category) && !/^[a-f\d]{24}$/i.test(category)) return category;
+  return 'Kinh nghiệm';
+};
+
 function BlogDetail() {
   const { slug } = useParams();
-  const fallbackPost = blogPosts.find((item) => item.slug === slug) ?? blogPosts[0];
-  const [post, setPost] = useState(fallbackPost);
+  const fallbackPost = blogPosts.find((item) => item.slug === slug);
+  const [post, setPost] = useState(fallbackPost || null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [relatedPosts, setRelatedPosts] = useState(blogPosts);
 
   useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    setNotFound(false);
+
+    const visitorId = localStorage.getItem('manual_analytics_visitor');
     api.get(`/posts/${slug}`)
       .then((response) => {
-        if (response.data?.data) setPost(response.data.data);
+        if (!isMounted) return;
+        if (response.data?.data) {
+          setPost(response.data.data);
+          setNotFound(false);
+        } else {
+          setPost(null);
+          setNotFound(true);
+        }
+        const viewKey = `manual_analytics_post:${slug}`;
+        if (visitorId && sessionStorage.getItem(viewKey) !== '1') {
+          return api.post('/analytics/post-view', { visitorId, slug })
+            .then((viewResponse) => {
+              if (!isMounted) return;
+              if (viewResponse.data?.data?.views !== undefined) {
+                setPost((current) => ({ ...current, views: viewResponse.data.data.views }));
+              }
+              sessionStorage.setItem(viewKey, '1');
+            });
+        }
+        return null;
       })
-      .catch(() => {
-        setPost(fallbackPost);
+      .catch((error) => {
+        if (!isMounted) return;
+        // Only use local content when this exact slug exists; never show another article.
+        if (error.response?.status !== 404 && fallbackPost) {
+          setPost(fallbackPost);
+          setNotFound(false);
+        } else {
+          setPost(null);
+          setNotFound(true);
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
       });
 
     api.get('/posts')
@@ -32,9 +76,29 @@ function BlogDetail() {
         if (posts.length) setRelatedPosts(posts);
       })
       .catch(() => {
-        setRelatedPosts(blogPosts.filter((item) => item.slug !== slug));
+        if (isMounted) setRelatedPosts(blogPosts.filter((item) => item.slug !== slug));
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [slug]);
+
+  if (isLoading && !post) {
+    return <div className="container-shell py-16 text-center text-slate-500">Đang tải bài viết...</div>;
+  }
+
+  if (notFound || !post) {
+    return (
+      <div className="container-shell py-16 text-center">
+        <h1 className="text-3xl font-black text-[#0B3B78]">Không tìm thấy bài viết</h1>
+        <p className="mt-3 text-slate-600">Bài viết có thể đã bị xoá, chưa xuất bản hoặc đường dẫn không chính xác.</p>
+        <Link to="/kinh-nghiem" className="mt-6 inline-flex rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">
+          Xem danh sách bài viết
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="container-shell py-12 sm:py-16">
@@ -51,10 +115,10 @@ function BlogDetail() {
       <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft">
         <img src={post.thumbnail} alt={post.title} className="h-72 w-full object-cover sm:h-[28rem]" />
         <div className="p-6 sm:p-8">
-          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#0057B8]">{post.category || 'Kinh nghiệm'}</span>
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#0057B8]">{getCategoryName(post.category)}</span>
           <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight text-[#0B3B78] sm:text-5xl">{post.title}</h1>
           <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500">
-            <span>Đăng ngày: {new Date(post.publishedAt).toLocaleDateString('vi-VN')}</span>
+            <span>Đăng ngày: {formatPostDate(post.publishedAt)}</span>
             <span>{post.views || 0} lượt xem</span>
             <span>Tác giả: Admin</span>
           </div>
@@ -82,7 +146,7 @@ function BlogDetail() {
             <Link key={relatedPost._id || relatedPost.id} to={`/kinh-nghiem/${relatedPost.slug}`} className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft">
               <img src={relatedPost.thumbnail} alt={relatedPost.title} className="h-44 w-full object-cover" />
               <div className="p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0057B8]">{relatedPost.category || 'Kinh nghiệm'}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0057B8]">{getCategoryName(relatedPost.category)}</p>
                 <h4 className="mt-2 text-lg font-bold text-[#0B3B78] group-hover:text-[#E31B23]">{relatedPost.title}</h4>
               </div>
             </Link>

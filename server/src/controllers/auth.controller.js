@@ -15,7 +15,7 @@ export const login = async (req, res, next) => {
 
 export const updatePassword = async (req, res, next) => {
   try {
-    const result = await changeAdminPassword(req.body);
+    const result = await changeAdminPassword({ ...req.body, email: req.user?.username });
     if (!result.success) {
       return res.status(400).json(result);
     }

@@ -64,9 +64,9 @@ function RegistrationsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Đăng ký</p><h1 className="mt-2 text-3xl font-black text-slate-900">Danh sách đăng ký</h1></div>
+        <div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Đăng ký</p><h1 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Danh sách đăng ký</h1></div>
         <p className="text-sm text-slate-600">Tổng: <span className="font-semibold text-slate-900">{total}</span></p>
       </div>
 
@@ -78,8 +78,48 @@ function RegistrationsPage() {
         ) : registrations.length === 0 ? (
           <div className="p-6 text-sm text-slate-600">Chưa có đăng ký nào.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
+          <>
+          <div className="space-y-3 p-3 md:hidden">
+            {registrations.map((row) => (
+              <article key={row._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="break-words font-bold text-slate-900">{row.name}</h2>
+                    <a href={`tel:${row.phone}`} className="mt-1 inline-block font-semibold text-blue-700">{row.phone}</a>
+                  </div>
+                  <span className={'shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ' + (statusMeta[row.status] || 'bg-slate-100 text-slate-700')}>
+                    {(statusOptions.find((item) => item.value === row.status)?.label) || row.status || 'Mới'}
+                  </span>
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                  <div><dt className="text-slate-500">Khóa học</dt><dd className="font-medium text-slate-800">{courseLabels[row.courseType] || row.courseType || '--'}</dd></div>
+                  <div><dt className="text-slate-500">Khu vực</dt><dd className="break-words font-medium text-slate-800">{row.area || '--'}</dd></div>
+                  <div className="col-span-2"><dt className="text-slate-500">Ghi chú</dt><dd className="break-words text-slate-700">{row.note || '--'}</dd></div>
+                  <div className="col-span-2"><dt className="text-slate-500">Ngày tạo</dt><dd className="text-slate-700">{formatDate(row.createdAt)}</dd></div>
+                </dl>
+                <div className="mt-4 flex flex-col gap-2">
+                  <select
+                    value={row.status || 'new'}
+                    onChange={(e) => updateStatus(row._id, e.target.value)}
+                    disabled={updatingId === row._id || deletingId === row._id}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => deleteRegistration(row._id, row.name)}
+                    disabled={deletingId === row._id || updatingId === row._id}
+                    className="w-full rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deletingId === row._id ? 'Đang xóa...' : 'Xóa đăng ký'}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden w-full overflow-x-auto md:block">
+            <table className="w-full min-w-[72rem] text-left text-sm">
               <thead className="bg-slate-100 text-slate-700">
                 <tr>
                   <th className="px-4 py-3">Họ tên</th>
@@ -100,7 +140,7 @@ function RegistrationsPage() {
                     <td className="px-4 py-3">{row.phone}</td>
                     <td className="px-4 py-3">{courseLabels[row.courseType] || row.courseType || '--'}</td>
                     <td className="px-4 py-3">{row.area || '--'}</td>
-                    <td className="px-4 py-3 max-w-xs whitespace-pre-wrap">{row.note || '--'}</td>
+                    <td className="max-w-xs px-4 py-3 whitespace-pre-wrap">{row.note || '--'}</td>
                     <td className="px-4 py-3">
                       <span className={'rounded-full px-2.5 py-1 text-xs font-semibold ' + (statusMeta[row.status] || 'bg-slate-100 text-slate-700')}>
                         {(statusOptions.find((item) => item.value === row.status)?.label) || row.status || 'Mới'}
@@ -134,6 +174,7 @@ function RegistrationsPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>

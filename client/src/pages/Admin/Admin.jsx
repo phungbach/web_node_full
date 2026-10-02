@@ -23,7 +23,7 @@ function Admin() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((item) => (
           <div key={item.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
             <p className="text-3xl font-black text-slate-900">{item.value}</p>
@@ -35,7 +35,7 @@ function Admin() {
       <div className="mt-10 grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
           <h2 className="text-xl font-bold text-slate-900">Khách hàng đăng ký</h2>
-          <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-100 text-slate-700">
                 <tr>

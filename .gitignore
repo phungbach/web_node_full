@@ -2,10 +2,16 @@ node_modules
 .env
 .env.local
 server/.env
+server/backups
 server/data/admin-auth.json
 server/data/settings.json
 server/data/media.json
+server/data/cpanel-credentials.json
 client/.env
 client/dist
 .DS_Store
 npm-debug.log*
+build/*.zip
+build/*.sql
+client/dist.zip
+server.zip

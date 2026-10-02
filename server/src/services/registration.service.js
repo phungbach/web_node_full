@@ -1,36 +1,46 @@
-import mongoose from 'mongoose';
-import Registration from '../models/Registration.model.js';
+import { randomUUID } from 'node:crypto';
+import { pool } from '../config/database.js';
 
-const seedRegistrations = [];
-const applyStatusUpdate = (record, status) => ({ ...record, status, updatedAt: new Date() });
+const fromRow = (row) => row && ({
+  _id: row.id,
+  name: row.name,
+  phone: row.phone,
+  courseType: row.course_type,
+  area: row.area,
+  note: row.note,
+  status: row.status,
+  source: row.source,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
 
 export const createRegistration = async (payload) => {
-  if (mongoose.connection.readyState === 1) return Registration.create(payload);
-  const record = { _id: String(Date.now()), ...payload, status: 'new', source: 'website', createdAt: new Date(), updatedAt: new Date() };
-  seedRegistrations.unshift(record);
-  return record;
+  const id = randomUUID();
+  await pool.execute(
+    `INSERT INTO registrations (id, name, phone, course_type, area, note, status, source)
+     VALUES (?, ?, ?, ?, ?, ?, 'new', 'website')`,
+    [id, payload.name, payload.phone, payload.courseType || 'unknown', payload.area || '', payload.note || ''],
+  );
+  const [rows] = await pool.execute('SELECT * FROM registrations WHERE id = ?', [id]);
+  return fromRow(rows[0]);
 };
 
 export const getRegistrations = async () => {
-  if (mongoose.connection.readyState === 1) return Registration.find({}).sort({ createdAt: -1 });
-  return [...seedRegistrations].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const [rows] = await pool.query('SELECT * FROM registrations ORDER BY created_at DESC');
+  return rows.map(fromRow);
 };
 
 export const updateRegistrationStatus = async (id, status) => {
-  if (mongoose.connection.readyState === 1) return Registration.findByIdAndUpdate(id, { status }, { new: true });
-  const index = seedRegistrations.findIndex((item) => item._id === id);
-  if (index === -1) return null;
-  const updated = applyStatusUpdate(seedRegistrations[index], status);
-  seedRegistrations[index] = updated;
-  return updated;
+  await pool.execute('UPDATE registrations SET status = ?, updated_at = CURRENT_TIMESTAMP(3) WHERE id = ?', [status, id]);
+  const [rows] = await pool.execute('SELECT * FROM registrations WHERE id = ?', [id]);
+  return fromRow(rows[0]);
 };
 
 export const deleteRegistration = async (id) => {
-  if (mongoose.connection.readyState === 1) return Registration.findByIdAndDelete(id);
-  const index = seedRegistrations.findIndex((item) => item._id === id);
-  if (index === -1) return null;
-  const [deleted] = seedRegistrations.splice(index, 1);
-  return deleted;
+  const [rows] = await pool.execute('SELECT * FROM registrations WHERE id = ?', [id]);
+  if (!rows.length) return null;
+  await pool.execute('DELETE FROM registrations WHERE id = ?', [id]);
+  return fromRow(rows[0]);
 };
 
 export const getRegistrationStats = async () => {
@@ -55,7 +65,6 @@ export const getRegistrationStats = async () => {
 
   const todayNewCount = registrations.filter((item) => new Date(item.createdAt) >= startOfToday).length;
   const unprocessedCount = registrations.filter((item) => (item.status || 'new') === 'new').length;
-
   return {
     totalRegistrations: registrations.length,
     unprocessedCount,

@@ -37,8 +37,8 @@ function Contact() {
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
             <h3 className="text-2xl font-bold text-slate-900">Thông tin liên hệ</h3>
             <ul className="mt-6 space-y-4 text-slate-700">
-              <li>☎ Điện thoại: 0900 000 000</li>
-              <li>💬 Zalo: 0900 000 000</li>
+              <li>☎ Điện thoại: 0987 499 141</li>
+              <li>💬 Zalo: 0987 499 141</li>
               <li>📍 Địa chỉ: Tuyên Quang, Việt Nam</li>
               <li>🌐 Website: hoclaixetq.com</li>
             </ul>

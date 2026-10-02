@@ -6,8 +6,10 @@ export const defaultSeoSchema = JSON.stringify({
   '@type': 'LocalBusiness',
   additionalType: 'https://schema.org/DrivingSchool',
   name: 'Học lái xe Tuyên Quang',
-  url: 'https://hoclaixetuyenquang.com',
-  telephone: '+84857034780',
+  url: 'https://hoclaixetq.com',
+  logo: 'https://hoclaixetq.com/logo.svg',
+  image: 'https://hoclaixetq.com/logo.svg',
+  telephone: '+84987499141',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Tuyên Quang',
@@ -38,8 +40,8 @@ const setLink = (rel, href) => {
 
 export const defaultSiteSettings = {
   siteName: 'Học lái xe Tuyên Quang',
-  phone: '0900000000',
-  zalo: '0900000000',
+  phone: '0987499141',
+  zalo: '0987499141',
   email: 'info@hoclaixetq.com',
   address: 'Tuyên Quang, Việt Nam',
   facebook: '',
@@ -47,15 +49,13 @@ export const defaultSiteSettings = {
   logoWidth: 180,
   logoHeight: 80,
   favicon: '',
-  googleAnalyticsId: '',
-  googleAnalyticsEnabled: false,
-  seoTitle: 'Học lái xe Tuyên Quang | Trường lái xe uy tín',
-  seoDescription: 'Học lái xe ô tô và xe máy tại Tuyên Quang với lộ trình rõ ràng, học phí hợp lý và đội ngũ tận tâm.',
-  seoKeywords: 'học lái xe Tuyên Quang, học lái ô tô, học lái xe máy',
-  canonicalUrl: 'https://hoclaixetuyenquang.com',
-  ogTitle: 'Học lái xe Tuyên Quang',
-  ogDescription: 'Tư vấn khóa học lái xe ô tô và xe máy tại Tuyên Quang.',
-  ogImage: '',
+  seoTitle: 'Học lái xe Tuyên Quang | Học ô tô, xe máy uy tín',
+  seoDescription: 'Học lái xe ô tô B1, B2 và xe máy A1, A2 tại Tuyên Quang. Lộ trình rõ ràng, giáo viên tận tâm, tư vấn nhanh qua 0987499141.',
+  seoKeywords: 'học lái xe Tuyên Quang, học lái xe B1, học lái xe B2, học lái xe A1, học lái xe A2, thi bằng lái xe Tuyên Quang',
+  canonicalUrl: 'https://hoclaixetq.com',
+  ogTitle: 'Học lái xe Tuyên Quang | B1, B2, A1, A2',
+  ogDescription: 'Tư vấn học lái ô tô B1, B2 và xe máy A1, A2 tại Tuyên Quang. Gọi 0987499141 để được hỗ trợ.',
+  ogImage: 'https://hoclaixetq.com/logo.svg',
   robotsIndex: true,
   robotsFollow: true,
   schemaJson: defaultSeoSchema,
@@ -98,7 +98,7 @@ function useSiteSettings() {
     setMeta('meta[property="og:title"]', { property: 'og:title' }, settings.ogTitle || title);
     setMeta('meta[property="og:description"]', { property: 'og:description' }, settings.ogDescription || description);
     setMeta('meta[property="og:type"]', { property: 'og:type' }, 'website');
-    if (settings.ogImage) setMeta('meta[property="og:image"]', { property: 'og:image' }, settings.ogImage);
+    setMeta('meta[property="og:image"]', { property: 'og:image' }, settings.ogImage || `${settings.canonicalUrl}/logo.svg`);
     if (settings.canonicalUrl) setLink('canonical', settings.canonicalUrl);
 
     const schemaId = 'global-seo-schema';
@@ -130,32 +130,6 @@ function useSiteSettings() {
       iconLink.href = settings.favicon;
     }
   }, [settings.siteName, settings.seoTitle, settings.seoDescription, settings.seoKeywords, settings.robotsIndex, settings.robotsFollow, settings.ogTitle, settings.ogDescription, settings.ogImage, settings.canonicalUrl, settings.schemaJson, settings.favicon, settings.heroDescription]);
-
-  useEffect(() => {
-    const scriptId = 'google-analytics-script';
-    const existingScript = document.getElementById(scriptId);
-    const measurementId = settings.googleAnalyticsId.trim();
-
-    if (!settings.googleAnalyticsEnabled || !/^G-[A-Z0-9-]+$/i.test(measurementId)) {
-      existingScript?.remove();
-      return;
-    }
-
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.id = scriptId;
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-      document.head.appendChild(script);
-    }
-
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function gtag() {
-      window.dataLayer.push(arguments);
-    };
-    window.gtag('js', new Date());
-    window.gtag('config', measurementId);
-  }, [settings.googleAnalyticsEnabled, settings.googleAnalyticsId]);
 
   return { ...settings, isLoaded };
 }

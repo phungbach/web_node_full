@@ -26,7 +26,7 @@ function DrivingMotorbike() {
               <Link to="/dang-ky" className="rounded-full bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">
                 Đăng ký tư vấn
               </Link>
-              <a href="tel:0900000000" className="rounded-full border border-slate-300 bg-white px-6 py-3 font-semibold text-slate-800 hover:border-blue-300 hover:text-blue-700">
+              <a href="tel:0987499141" className="rounded-full border border-slate-300 bg-white px-6 py-3 font-semibold text-slate-800 hover:border-blue-300 hover:text-blue-700">
                 Gọi ngay
               </a>
             </div>

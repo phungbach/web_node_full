@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Leave API requests for the cPanel Node.js application.
+RewriteRule ^api(?:/|$) - [L]
+
+# Serve existing files and directories normally.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Let React Router handle client-side routes such as /admin.
+RewriteRule ^ index.html [L]

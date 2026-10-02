@@ -1,7 +1,12 @@
 {
   "name": "hoclaixetq",
   "private": true,
+  "engines": {
+    "node": "20.x",
+    "npm": ">=10"
+  },
   "scripts": {
+    "build": "node build/build.mjs",
     "install:all": "npm install --prefix client && npm install --prefix server",
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",

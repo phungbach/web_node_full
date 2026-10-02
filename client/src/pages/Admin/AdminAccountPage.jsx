@@ -44,7 +44,7 @@ function AdminAccountPage() {
   };
 
   return (
-    <div className="max-w-2xl space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+    <div className="max-w-2xl space-y-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Tài khoản quản trị</p>
         <h1 className="mt-2 text-3xl font-black text-slate-900">Đổi mật khẩu</h1>

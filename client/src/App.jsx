@@ -18,8 +18,11 @@ import CategoriesPage from './pages/Admin/CategoriesPage';
 import MediaPage from './pages/Admin/MediaPage';
 import SEOPage from './pages/Admin/SEOPage';
 import SettingsPage from './pages/Admin/SettingsPage';
+import BackupsPage from './pages/Admin/BackupsPage';
+import QuizPage from './pages/Admin/QuizPage';
 import AdminLoginPage from './pages/Admin/AdminLoginPage';
 import NotFound from './pages/NotFound/NotFound';
+import Quiz from './pages/Quiz/Quiz';
 
 function AdminRoutes() {
   return (
@@ -35,6 +38,8 @@ function AdminRoutes() {
         <Route path='seo' element={<SEOPage />} />
         <Route path='analytics' element={<Navigate to='/admin' replace />} />
         <Route path='settings' element={<SettingsPage />} />
+        <Route path='backups' element={<BackupsPage />} />
+        <Route path='quiz' element={<QuizPage />} />
       </Route>
     </>
   );
@@ -50,6 +55,7 @@ function App() {
         <Route path="/kinh-nghiem" element={<Blog />} />
         <Route path="/kinh-nghiem/:slug" element={<BlogDetail />} />
         <Route path="/cau-hoi" element={<FAQ />} />
+        <Route path="/quiz" element={<Quiz />} />
         <Route path="/lien-he" element={<Contact />} />
         <Route path="/dang-ky" element={<Register />} />
         <Route path="/404" element={<NotFound />} />

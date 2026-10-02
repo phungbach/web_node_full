@@ -29,7 +29,15 @@ function AdminLoginPage() {
       localStorage.setItem('admin_user', JSON.stringify(user));
       navigate('/admin', { replace: true });
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Không thể đăng nhập. Vui lòng thử lại.');
+      if (!requestError.response) {
+        setError(
+          requestError.code === 'ECONNABORTED'
+            ? 'Máy chủ đăng nhập phản hồi quá lâu. Kiểm tra backend và kết nối MySQL.'
+            : 'Không kết nối được API đăng nhập. Kiểm tra backend và cấu hình API.',
+        );
+      } else {
+        setError(requestError.response.data?.message || 'Không thể đăng nhập. Vui lòng thử lại.');
+      }
     } finally {
       setIsSubmitting(false);
     }

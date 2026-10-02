@@ -1,53 +1,47 @@
-import mongoose from 'mongoose';
-import Category from '../models/Category.model.js';
+import { randomUUID } from 'node:crypto';
+import { pool } from '../config/database.js';
 
-const seedCategories = [
-  { _id: '1', name: 'Học lái ô tô', slug: 'hoc-lai-o-to' },
-  { _id: '2', name: 'Học lái xe máy', slug: 'hoc-lai-xe-may' },
-  { _id: '3', name: 'Kinh nghiệm', slug: 'kinh-nghiem' },
-  { _id: '4', name: 'Thi sát hạch', slug: 'thi-sat-hach' },
-  { _id: '5', name: 'Quy định', slug: 'quy-dinh' },
-  { _id: '6', name: 'Tin tức', slug: 'tin-tuc' },
-];
+const fromRow = (row) => row && ({
+  _id: row.id,
+  name: row.name,
+  slug: row.slug,
+  description: row.description,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
 
 export const getCategories = async () => {
-  if (mongoose.connection.readyState === 1) {
-    return Category.find({}).sort({ createdAt: -1 });
-  }
-
-  return seedCategories;
+  const [rows] = await pool.query('SELECT * FROM categories ORDER BY created_at DESC');
+  return rows.map(fromRow);
 };
 
-export const createCategory = async (payload) => {
-  if (mongoose.connection.readyState === 1) {
-    return Category.create(payload);
-  }
-
-  const record = { _id: String(Date.now()), ...payload };
-  seedCategories.unshift(record);
-  return record;
+export const createCategory = async ({ name, slug, description = '' }) => {
+  const id = randomUUID();
+  await pool.execute(
+    'INSERT INTO categories (id, name, slug, description) VALUES (?, ?, ?, ?)',
+    [id, name, slug, description],
+  );
+  const [rows] = await pool.execute('SELECT * FROM categories WHERE id = ?', [id]);
+  return fromRow(rows[0]);
 };
 
 export const updateCategory = async (id, payload) => {
-  if (mongoose.connection.readyState === 1) {
-    return Category.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+  const allowed = ['name', 'slug', 'description'];
+  const entries = Object.entries(payload).filter(([key]) => allowed.includes(key));
+  if (entries.length) {
+    const columns = { name: 'name', slug: 'slug', description: 'description' };
+    await pool.execute(
+      `UPDATE categories SET ${entries.map(([key]) => `${columns[key]} = ?`).join(', ')}, updated_at = CURRENT_TIMESTAMP(3) WHERE id = ?`,
+      [...entries.map(([, value]) => value), id],
+    );
   }
-
-  const index = seedCategories.findIndex((category) => category._id === id);
-  if (index === -1) return null;
-
-  seedCategories[index] = { ...seedCategories[index], ...payload };
-  return seedCategories[index];
+  const [rows] = await pool.execute('SELECT * FROM categories WHERE id = ?', [id]);
+  return fromRow(rows[0]);
 };
 
 export const deleteCategory = async (id) => {
-  if (mongoose.connection.readyState === 1) {
-    return Category.findByIdAndDelete(id);
-  }
-
-  const index = seedCategories.findIndex((category) => category._id === id);
-  if (index === -1) return null;
-
-  const [deleted] = seedCategories.splice(index, 1);
-  return deleted;
+  const [rows] = await pool.execute('SELECT * FROM categories WHERE id = ?', [id]);
+  if (!rows.length) return null;
+  await pool.execute('DELETE FROM categories WHERE id = ?', [id]);
+  return fromRow(rows[0]);
 };

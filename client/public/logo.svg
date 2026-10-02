@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 80" role="img" aria-label="Học lái xe Tuyên Quang logo">
+  <rect width="220" height="80" rx="18" fill="#0f172a"/>
+  <path d="M24 54V26h18c12 0 18 7 18 14 0 7-6 14-18 14H24zm18-12c6 0 9-3 9-7s-3-7-9-7H36v14h6z" fill="#f8fafc"/>
+  <path d="M64 54V26h12l13 18V26h10v28H89L76 36v18H64z" fill="#fbbf24"/>
+  <path d="M108 54V26h26v8h-16v5h15v8h-15v9h17v8h-27z" fill="#f8fafc"/>
+  <path d="M148 54V26h11l10 18 10-18h11v28h-9V39l-12 20h-3l-12-20v15h-9z" fill="#f8fafc"/>
+  <path d="M188 54V26h10v28h-10z" fill="#fbbf24"/>
+</svg>

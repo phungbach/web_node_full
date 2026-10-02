@@ -1,4 +1,5 @@
 import { createRegistration, deleteRegistration, getRegistrations, updateRegistrationStatus } from '../services/registration.service.js';
+import { sendRegistrationNotification } from '../services/telegram.service.js';
 
 const submissionTracker = new Map();
 const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -174,6 +175,12 @@ export const createRegistrationEntry = async (req, res, next) => {
 
     bucket.push({ ts: now });
     saveBucket(ip, cleanupBucket(bucket, RATE_LIMIT_WINDOW_MS));
+
+    try {
+      await sendRegistrationNotification(registration);
+    } catch (notificationError) {
+      console.error('[telegram] Không thể gửi thông báo đăng ký:', notificationError.message);
+    }
 
     res.status(201).json({
       success: true,

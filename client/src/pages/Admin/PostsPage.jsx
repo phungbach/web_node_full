@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import api from '../../services/api';
+import { formatPostDate, getDateInputValue, toPublishedAtValue } from '../../utils/date';
 
-const emptyPost = {
+const createEmptyPost = () => ({
   title: '',
   slug: '',
   excerpt: '',
@@ -11,7 +12,8 @@ const emptyPost = {
   seoDescription: '',
   status: 'draft',
   category: '',
-};
+  publishedAt: getDateInputValue(),
+});
 
 const authConfig = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
@@ -34,16 +36,28 @@ const readFile = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
+const escapeHtml = (value) => String(value || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
+const limitText = (value, maxLength) => value.length <= maxLength ? value : `${value.slice(0, maxLength - 1).trim()}…`;
+
 function PostsPage() {
   const thumbnailInputRef = useRef(null);
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [media, setMedia] = useState([]);
-  const [post, setPost] = useState(emptyPost);
+  const [post, setPost] = useState(createEmptyPost);
   const [editingId, setEditingId] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isMediaLoading, setIsMediaLoading] = useState(false);
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
+  const [contentMode, setContentMode] = useState('visual');
+  const [contentStyle, setContentStyle] = useState('guide');
+  const contentEditorRef = useRef(null);
   const [mediaPage, setMediaPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState('');
@@ -76,8 +90,10 @@ function PostsPage() {
   }, []);
 
   const openCreateForm = () => {
-    setPost(emptyPost);
+    setPost(createEmptyPost());
     setEditingId(null);
+    setContentMode('visual');
+    setContentStyle('guide');
     setIsFormOpen(true);
     setMessage('');
     setError('');
@@ -85,13 +101,26 @@ function PostsPage() {
   };
 
   const openEditForm = (selectedPost) => {
-    setPost({ ...emptyPost, ...selectedPost });
+    setPost({
+      ...createEmptyPost(),
+      ...selectedPost,
+      category: selectedPost.category?._id || selectedPost.category || '',
+      publishedAt: getDateInputValue(selectedPost.publishedAt || selectedPost.createdAt || new Date()),
+    });
     setEditingId(selectedPost._id);
+    setContentMode('visual');
+    setContentStyle('guide');
     setIsFormOpen(true);
     setMessage('');
     setError('');
     loadMedia();
   };
+
+  useEffect(() => {
+    if (isFormOpen && contentMode === 'visual' && contentEditorRef.current && contentEditorRef.current.innerHTML !== post.content) {
+      contentEditorRef.current.innerHTML = post.content || '';
+    }
+  }, [contentMode, editingId, isFormOpen]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -100,6 +129,51 @@ function PostsPage() {
       [name]: value,
       ...(name === 'title' && !editingId ? { slug: makeSlug(value) } : {}),
     }));
+  };
+
+  const updateContent = (content) => {
+    setPost((current) => ({ ...current, content }));
+    if (contentMode === 'visual' && contentEditorRef.current) contentEditorRef.current.innerHTML = content;
+  };
+
+  const insertHtmlSnippet = (snippet) => {
+    const nextContent = `${post.content ? `${post.content}\n` : ''}${snippet}`;
+    updateContent(nextContent);
+  };
+
+  const generateStyledContent = () => {
+    if (post.content.trim() && !window.confirm('Nội dung hiện tại sẽ được thay bằng mẫu mới. Bạn có muốn tiếp tục?')) return;
+    const title = escapeHtml(post.title || 'Học lái xe tại Tuyên Quang');
+    const excerpt = escapeHtml(post.excerpt || 'Tìm hiểu lộ trình học lái xe phù hợp và những điều cần chuẩn bị.');
+    const templates = {
+      guide: `<h2>${title}</h2><p>${excerpt}</p><h2>Lộ trình học lái xe</h2><ol><li>Chuẩn bị hồ sơ và xác định hạng bằng phù hợp.</li><li>Ôn lý thuyết, biển báo và các tình huống giao thông.</li><li>Luyện thực hành theo từng kỹ năng với giáo viên.</li><li>Ôn tập và chuẩn bị trước kỳ thi sát hạch.</li></ol><h2>Kinh nghiệm cần nhớ</h2><p>Hãy học đều đặn, ưu tiên an toàn và ghi lại những lỗi cần cải thiện sau mỗi buổi thực hành.</p><div class="article-cta"><h3>Cần tư vấn khóa học?</h3><p>Gọi <a href="tel:0987499141"><strong>0987499141</strong></a> để được hỗ trợ tại Tuyên Quang.</p></div>`,
+      experience: `<h2>${title}</h2><p>${excerpt}</p><h2>Điều nên chuẩn bị trước khi học</h2><p>Người học nên xác định mục tiêu, thời gian rảnh và hạng bằng muốn đăng ký. Việc chuẩn bị sớm giúp quá trình học rõ ràng và tiết kiệm thời gian hơn.</p><h2>Mẹo học hiệu quả</h2><ul><li>Ôn lý thuyết theo từng nhóm chủ đề.</li><li>Luyện kỹ năng chậm, chắc và đúng hướng dẫn.</li><li>Trao đổi ngay với giáo viên khi gặp lỗi.</li></ul><div class="article-cta"><h3>Nhận tư vấn miễn phí</h3><p>Liên hệ <a href="tel:0987499141"><strong>0987499141</strong></a> để được tư vấn lịch học.</p></div>`,
+      course: `<h2>${title}</h2><p>${excerpt}</p><h2>Khóa học có gì?</h2><p>Chương trình được sắp xếp theo từng bước, kết hợp kiến thức lý thuyết và thực hành để học viên dễ theo dõi tiến độ.</p><h2>Đối tượng phù hợp</h2><ul><li>Người mới bắt đầu học lái xe.</li><li>Người cần nâng cao kỹ năng và ôn thi.</li><li>Người muốn chọn lịch học linh hoạt.</li></ul><div class="article-cta"><h3>Đăng ký tư vấn</h3><p>Gọi <a href="tel:0987499141"><strong>0987499141</strong></a> để chọn khóa học phù hợp.</p></div>`,
+    };
+
+    updateContent(templates[contentStyle]);
+    setMessage('Đã tạo nội dung theo mẫu. Bạn có thể chỉnh tiếp ở chế độ Soạn văn bản hoặc HTML.');
+  };
+
+  const getSelectedCategoryName = () => {
+    const selectedCategory = categories.find((item) => item._id === post.category);
+    return selectedCategory?.name || 'học lái xe';
+  };
+
+  const generateSeoTitle = () => {
+    const title = post.title.trim() || 'Học lái xe tại Tuyên Quang';
+    const seoTitle = limitText(`${title} | Học lái xe Tuyên Quang`, 60);
+    setPost((current) => ({ ...current, seoTitle }));
+    setMessage('Đã tự động tạo SEO title.');
+  };
+
+  const generateSeoDescription = () => {
+    const title = post.title.trim() || 'học lái xe';
+    const category = getSelectedCategoryName();
+    const base = post.excerpt.trim() || `Tìm hiểu ${title.toLowerCase()} và lộ trình ${category.toLowerCase()}`;
+    const seoDescription = limitText(`${base} tại Tuyên Quang. Gọi 0987499141 để được tư vấn lịch học và hồ sơ.`, 160);
+    setPost((current) => ({ ...current, seoDescription }));
+    setMessage('Đã tự động tạo SEO description.');
   };
 
   const handleThumbnailUpload = async (event) => {
@@ -144,18 +218,23 @@ function PostsPage() {
     event.preventDefault();
     setMessage('');
     setError('');
+    if (!post.content.trim()) {
+      setError('Vui lòng nhập nội dung bài viết.');
+      return;
+    }
 
     try {
+      const postPayload = { ...post, publishedAt: toPublishedAtValue(post.publishedAt) };
       if (editingId) {
-        await api.put(`/posts/${editingId}`, post, authConfig());
+        await api.put(`/posts/${editingId}`, postPayload, authConfig());
         setMessage('Đã cập nhật bài viết.');
       } else {
-        await api.post('/posts', post, authConfig());
+        await api.post('/posts', postPayload, authConfig());
         setMessage('Đã thêm bài viết.');
       }
       setIsFormOpen(false);
       setEditingId(null);
-      setPost(emptyPost);
+      setPost(createEmptyPost());
       await loadPosts();
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Không thể lưu bài viết.');
@@ -178,11 +257,11 @@ function PostsPage() {
   const visibleMedia = media.slice(mediaPage * MEDIA_PAGE_SIZE, (mediaPage + 1) * MEDIA_PAGE_SIZE);
 
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Content</p>
-          <h1 className="mt-2 text-3xl font-black text-slate-900">Bài viết</h1>
+          <h1 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Bài viết</h1>
         </div>
         <button onClick={openCreateForm} className="rounded-xl bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700">
           + Thêm bài viết
@@ -197,6 +276,7 @@ function PostsPage() {
           <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2">Tiêu đề<input required name="title" value={post.title} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" /></label>
           <label className="grid gap-2 text-sm font-medium text-slate-700">Slug<input required name="slug" value={post.slug} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" /></label>
           <label className="grid gap-2 text-sm font-medium text-slate-700">Danh mục<select required name="category" value={post.category?._id || post.category || ''} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400"><option value="">Chọn danh mục</option>{categories.map((currentCategory) => <option key={currentCategory._id} value={currentCategory._id}>{currentCategory.name}</option>)}</select></label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">Ngày đăng<input required type="date" name="publishedAt" value={post.publishedAt} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" /></label>
           <label className="grid gap-2 text-sm font-medium text-slate-700">Trạng thái<select name="status" value={post.status} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400"><option value="draft">Bản nháp</option><option value="published">Đã xuất bản</option></select></label>
           <div className="grid gap-3 text-sm font-medium text-slate-700 md:col-span-2">
             <label>Ảnh đại diện URL<input name="thumbnail" value={post.thumbnail} onChange={handleChange} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" placeholder="https://..." /></label>
@@ -238,10 +318,71 @@ function PostsPage() {
             </div>
           </div>
           <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2">Mô tả ngắn<textarea name="excerpt" value={post.excerpt} onChange={handleChange} rows="3" className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" /></label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2">Nội dung<textarea required name="content" value={post.content} onChange={handleChange} rows="8" className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" placeholder="Có thể nhập nội dung HTML." /></label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700">SEO title<input name="seoTitle" value={post.seoTitle} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" /></label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700">SEO description<input name="seoDescription" value={post.seoDescription} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" /></label>
-          <div className="flex gap-3 md:col-span-2"><button type="submit" className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">{editingId ? 'Lưu bài viết' : 'Tạo bài viết'}</button><button type="button" onClick={() => setIsFormOpen(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 hover:border-blue-300">Huỷ</button></div>
+          <div className="grid gap-3 text-sm font-medium text-slate-700 md:col-span-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p>Nội dung</p>
+                <p className="mt-1 text-xs font-normal text-slate-500">Soạn trực quan hoặc chuyển sang HTML để chỉnh mã nội dung.</p>
+              </div>
+              <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+                <button type="button" onClick={() => setContentMode('visual')} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${contentMode === 'visual' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Soạn văn bản</button>
+                <button type="button" onClick={() => setContentMode('html')} className={`rounded-md px-3 py-1.5 text-xs font-semibold ${contentMode === 'html' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>HTML</button>
+              </div>
+            </div>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-700">Gợi ý thẻ HTML</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button type="button" onClick={() => insertHtmlSnippet('<h2>Tiêu đề phụ</h2>')} className="rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">+ H2</button>
+                <button type="button" onClick={() => insertHtmlSnippet('<p>Đoạn nội dung mới...</p>')} className="rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">+ Đoạn văn</button>
+                <button type="button" onClick={() => insertHtmlSnippet('<ul><li>Ý thứ nhất</li><li>Ý thứ hai</li></ul>')} className="rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">+ Danh sách</button>
+                <button type="button" onClick={() => insertHtmlSnippet('<div class="article-cta"><h3>Gọi để được tư vấn</h3><p>Liên hệ <a href="tel:0987499141"><strong>0987499141</strong></a> để được hỗ trợ.</p></div>')} className="rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">+ CTA</button>
+              </div>
+            </div>
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-700">Tự động tạo nội dung</p>
+                  <p className="mt-1 text-xs font-normal text-blue-800">Tạo nhanh HTML theo style có sẵn, dựa trên tiêu đề và mô tả ngắn.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <select value={contentStyle} onChange={(event) => setContentStyle(event.target.value)} className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-blue-800 outline-none">
+                    <option value="guide">Hướng dẫn</option>
+                    <option value="experience">Kinh nghiệm</option>
+                    <option value="course">Giới thiệu khóa học</option>
+                  </select>
+                  <button type="button" onClick={generateStyledContent} className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800">Tạo nội dung mẫu</button>
+                </div>
+              </div>
+            </div>
+            {contentMode === 'visual' ? (
+              <div
+                ref={contentEditorRef}
+                contentEditable
+                suppressContentEditableWarning
+                onInput={(event) => {
+                  const content = event.currentTarget.innerHTML;
+                  setPost((current) => ({ ...current, content }));
+                }}
+                className="article-content min-h-[14rem] rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400"
+                role="textbox"
+                aria-label="Nội dung bài viết"
+              />
+            ) : (
+              <textarea required name="content" value={post.content} onChange={handleChange} rows="10" className="min-h-[14rem] rounded-xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none focus:border-blue-400" placeholder="<h2>Tiêu đề</h2><p>Nội dung bài viết...</p>" />
+            )}
+            <textarea name="contentValidation" value={post.content} onChange={() => {}} tabIndex={-1} aria-hidden="true" className="pointer-events-none absolute h-px w-px opacity-0" />
+          </div>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            <span className="flex flex-wrap items-center justify-between gap-2">SEO title <button type="button" onClick={generateSeoTitle} className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100">Tạo tự động</button></span>
+            <input name="seoTitle" value={post.seoTitle} onChange={handleChange} maxLength="60" className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" />
+            <span className="text-xs font-normal text-slate-500">{post.seoTitle.length}/60 ký tự</span>
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            <span className="flex flex-wrap items-center justify-between gap-2">SEO description <button type="button" onClick={generateSeoDescription} className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100">Tạo tự động</button></span>
+            <textarea name="seoDescription" value={post.seoDescription} onChange={handleChange} maxLength="160" rows="3" className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" />
+            <span className="text-xs font-normal text-slate-500">{post.seoDescription.length}/160 ký tự</span>
+          </label>
+          <div className="flex flex-wrap gap-3 md:col-span-2"><button type="submit" className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">{editingId ? 'Lưu bài viết' : 'Tạo bài viết'}</button><button type="button" onClick={() => setIsFormOpen(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 hover:border-blue-300">Huỷ</button></div>
         </form>
       ) : null}
 
@@ -249,7 +390,31 @@ function PostsPage() {
       {message ? <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">{message}</p> : null}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200">
-        <table className="min-w-full text-left text-sm">
+        <div className="space-y-3 p-3 md:hidden">
+          {isLoading ? <p className="p-4 text-center text-sm text-slate-500">Đang tải bài viết...</p> : null}
+          {!isLoading && posts.length === 0 ? <p className="p-4 text-center text-sm text-slate-500">Chưa có bài viết.</p> : null}
+          {!isLoading && posts.map((currentPost) => (
+            <article key={currentPost._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="min-w-0 break-words font-bold text-slate-900">{currentPost.title}</h2>
+                <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                  {currentPost.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+                </span>
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                <div><dt className="text-slate-500">Danh mục</dt><dd className="break-words font-medium text-slate-800">{currentPost.category?.name || categories.find((item) => item._id === currentPost.category)?.name || 'Chưa phân loại'}</dd></div>
+                <div><dt className="text-slate-500">Lượt xem</dt><dd className="font-medium text-slate-800">{currentPost.views || 0}</dd></div>
+                <div className="col-span-2"><dt className="text-slate-500">Ngày đăng</dt><dd className="text-slate-700">{formatPostDate(currentPost.publishedAt || currentPost.createdAt)}</dd></div>
+              </dl>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button onClick={() => openEditForm(currentPost)} className="flex-1 rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50">Sửa</button>
+                <button onClick={() => handleDelete(currentPost._id)} className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Xóa</button>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto md:block">
+        <table className="w-full min-w-[52rem] text-left text-sm">
           <thead className="bg-slate-100 text-slate-700">
             <tr>
               <th className="px-4 py-3">Tiêu đề</th>
@@ -273,12 +438,13 @@ function PostsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-slate-600">{currentPost.views || 0}</td>
-                <td className="px-4 py-3 text-slate-600">{new Date(currentPost.publishedAt || currentPost.createdAt).toLocaleDateString('vi-VN')}</td>
+                <td className="px-4 py-3 text-slate-600">{formatPostDate(currentPost.publishedAt || currentPost.createdAt)}</td>
                 <td className="px-4 py-3"><div className="flex gap-2"><button onClick={() => openEditForm(currentPost)} className="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">Sửa</button><button onClick={() => handleDelete(currentPost._id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">Xoá</button></div></td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

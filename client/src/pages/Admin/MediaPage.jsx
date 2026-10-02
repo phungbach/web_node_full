@@ -69,11 +69,11 @@ function MediaPage() {
   };
 
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Media</p>
-          <h1 className="mt-2 text-3xl font-black text-slate-900">Thư viện ảnh</h1>
+          <h1 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Thư viện ảnh</h1>
           <p className="mt-2 text-sm text-slate-500">Lưu trữ ảnh dùng cho bài viết, logo và các trang public.</p>
         </div>
         <>

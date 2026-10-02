@@ -105,10 +105,10 @@ function SettingsPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
+    <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:p-6">
       <div className="mb-6">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">Settings</p>
-        <h1 className="mt-2 text-3xl font-black text-slate-900">Thông tin website</h1>
+        <h1 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Thông tin website</h1>
         <p className="mt-2 text-sm text-slate-500">Cập nhật thông tin hiển thị trên Header và Footer của website.</p>
       </div>
 
@@ -147,17 +147,6 @@ function SettingsPage() {
           <input id="favicon-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={(event) => handleImageFile(event, 'favicon')} className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-blue-700" />
           <label className="grid gap-2 font-normal text-slate-500">Hoặc nhập Favicon URL<input name="favicon" value={settings.favicon.startsWith('data:') ? '' : settings.favicon} onChange={handleChange} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 outline-none focus:border-blue-400" placeholder="https://.../favicon.png" /></label>
           <p className="font-normal text-slate-500">Ảnh sẽ được thu nhỏ vừa khung 512 x 512px, không cắt ảnh.</p>
-        </div>
-        <div className="grid gap-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 md:col-span-2 md:grid-cols-[auto_1fr] md:items-center">
-          <label className="flex items-center gap-3 text-sm font-semibold text-slate-800">
-            <input type="checkbox" name="googleAnalyticsEnabled" checked={settings.googleAnalyticsEnabled} onChange={handleChange} className="h-5 w-5 accent-blue-600" />
-            Bật Google Analytics 4
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Measurement ID
-            <input name="googleAnalyticsId" value={settings.googleAnalyticsId} onChange={handleChange} className="rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-400" placeholder="G-XXXXXXXXXX" />
-          </label>
-          <p className="text-sm text-slate-600 md:col-span-2">Nhập Measurement ID trong Google Analytics để website bắt đầu ghi nhận lượt truy cập.</p>
         </div>
       </div>
 
